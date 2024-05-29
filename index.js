@@ -1,116 +1,139 @@
 const express = require('express')
-const app = express()
+const { MongoClient } = require('mongodb')
 
-app.get('/', function (req, res) {
-  res.send('Hello World!')
-})
+//Preparamos as informações de acesso ao banco de dados
+const dbURL = 'mongodb+srv://admin:yGMDsyz8Fw3hOupx@cluster0.i9hca14.mongodb.net'
+const dbName = 'mongodb-intro-e-implementacao'
 
-const lista = ['Java', 'Kotlin', 'Android']
+// Declaramos a função main
+async function main() {
+    //Realizamos a conexão com o banco de dados
+    const client = new MongoClient(dbURL)
+    console.log("Conectando ao banco de dados...")
+    await client.connect()
+    console.log("Banco de dados conectado com sucesso!")
 
-// Endpoint Read All [GET] /personagem
-app.get ('/personagem', function (req, res) {
-  res.send(lista.filter(Boolean))
-})
+    const db = client.db(dbName)
+    const collection = db.collection('personagem')
 
-// Endpoint Read By ID [GET] /personagem/:id
-
-app.get('/personagem/:id', function (req, res) {
-  // Acessamos o parâmetro de rota ID
-  const id = req.params.id
-
-  // Acessa o item na lista usando o ID - 1
-  const item  = lista[id - 1]
-
-  // Se o usuario buscar um id invalido, retorna o erro 404
-  if (!item) {
-    return res.status(404).send('Item não encontrado')
-  }
-
-  //Enviamos o item como resposta
-  res.send(item)
-})
+    const app = express()
 
 
-// Sinaliza para o Express que estamos usando JSON no body
-app.use(express.json())
+    app.get('/', function (req, res) {
+        res.send('Hello World!')
+    })
 
-// Endpoint Create [POST] /personagem
-app.post ('/personagem', function(req, res) {
-  // Acessamos o body da requisição
-  const body = req.body
+    const lista = ['Java', 'Kotlin', 'Android']
 
-  // Acessamos a propriedade 'nome' do body
-  const novoItem = body.nome
+    // Endpoint Read All [GET] /personagem
+    app.get('/personagem', function (req, res) {
+        res.send(lista.filter(Boolean))
+    })
 
-  // Checar s eo nome está presente no body
-  if (!novoItem) {
-    res.status(400).send('Corpo da requisição deve contar a propriedade `nome`.')
-  }
+    // Endpoint Read By ID [GET] /personagem/:id
 
-  // Checa se o novoItem está na lista ou não
-  if (lista.includes(novoItem)){
-    return res.status(409).send('O Item já existe na lista')
-  }
+    app.get('/personagem/:id', function (req, res) {
+        // Acessamos o parâmetro de rota ID
+        const id = req.params.id
 
-  // Adicionamos na lista
-  lista.push(novoItem)
+        // Acessa o item na lista usando o ID - 1
+        const item = lista[id - 1]
 
-  // Exibimos uma mensagem de sucesso
-  res.status(201).send("Item adicionado com sucesso: " + novoItem)
-})
+        // Se o usuario buscar um id invalido, retorna o erro 404
+        if (!item) {
+            return res.status(404).send('Item não encontrado')
+        }
 
-// Endpoint Updade [PUT] /personagem/:id
+        //Enviamos o item como resposta
+        res.send(item)
+    })
 
-app.put('/personagem/:id', function (req, res) {
-  //Acessamos o ID dos parametros de rota
-  const id = req.params.id
 
-  // Se o usuario buscar um id invalido, retorna o erro 404
-  if (!lista[id]) {
-    return res.status(404).send('Item não encontrado')
-  }
+    // Sinaliza para o Express que estamos usando JSON no body
+    app.use(express.json())
 
-  // Acessamos o Body da requisição
-  const body = req.body
+    // Endpoint Create [POST] /personagem
+    app.post('/personagem', function (req, res) {
+        // Acessamos o body da requisição
+        const body = req.body
 
-  // Acessamos a propriedade 'nome do body
-  const novoItem = body.nome
+        // Acessamos a propriedade 'nome' do body
+        const novoItem = body.nome
 
-  // Checar s eo nome está presente no body
-  if (!novoItem) {
-    res.status(400).send('Corpo da requisição deve contar a propriedade `nome`.')
-  }
+        // Checar s eo nome está presente no body
+        if (!novoItem) {
+            res.status(400).send('Corpo da requisição deve contar a propriedade `nome`.')
+        }
 
-  // Checa se o novoItem está na lista ou não
-  if (lista.includes(novoItem)){
-    return res.status(409).send('O Item já existe na lista')
-  }
+        // Checa se o novoItem está na lista ou não
+        if (lista.includes(novoItem)) {
+            return res.status(409).send('O Item já existe na lista')
+        }
 
-  // Atualizamos na lista o novoItem pelo ID - 1
-  lista[id - 1] = novoItem
+        // Adicionamos na lista
+        lista.push(novoItem)
 
-  // Enviamos uma mensagem de sucesso
-  res.send('Item atualizado com sucesso: '+ id + ' - ' + novoItem)
-})
+        // Exibimos uma mensagem de sucesso
+        res.status(201).send("Item adicionado com sucesso: " + novoItem)
+    })
 
-// Endpoint Delete [DELETE] /personagem/:id
-app.delete('/personagem/:id', function (req, res) {
- // Acessamos o parâmetro de rota
- const id = req.params.id
+    // Endpoint Updade [PUT] /personagem/:id
 
- // Se o usuario buscar um id invalido, retorna o erro 404
- if (!lista[id]) {
-  return res.status(404).send('Item não encontrado')
+    app.put('/personagem/:id', function (req, res) {
+        //Acessamos o ID dos parametros de rota
+        const id = req.params.id
+
+        // Se o usuario buscar um id invalido, retorna o erro 404
+        if (!lista[id]) {
+            return res.status(404).send('Item não encontrado')
+        }
+
+        // Acessamos o Body da requisição
+        const body = req.body
+
+        // Acessamos a propriedade 'nome do body
+        const novoItem = body.nome
+
+        // Checar s eo nome está presente no body
+        if (!novoItem) {
+            res.status(400).send('Corpo da requisição deve contar a propriedade `nome`.')
+        }
+
+        // Checa se o novoItem está na lista ou não
+        if (lista.includes(novoItem)) {
+            return res.status(409).send('O Item já existe na lista')
+        }
+
+        // Atualizamos na lista o novoItem pelo ID - 1
+        lista[id - 1] = novoItem
+
+        // Enviamos uma mensagem de sucesso
+        res.send('Item atualizado com sucesso: ' + id + ' - ' + novoItem)
+    })
+
+    // Endpoint Delete [DELETE] /personagem/:id
+    app.delete('/personagem/:id', function (req, res) {
+        // Acessamos o parâmetro de rota
+        const id = req.params.id
+
+        // Se o usuario buscar um id invalido, retorna o erro 404
+        if (!lista[id]) {
+            return res.status(404).send('Item não encontrado')
+        }
+
+        // Remover o item da lista usando o ID - 1
+        delete lista[id - 1]
+
+        // Enviamos uma mensagem de sucesso
+        res.send('Item removido com sucesso ' + id)
+
+
+        res.send('Delete')
+    })
+
+    app.listen(3000)
 }
 
- // Remover o item da lista usando o ID - 1
- delete lista[id - 1]
+//Executamos a função main
 
- // Enviamos uma mensagem de sucesso
- res.send('Item removido com sucesso ' + id)
-
-
-  res.send('Delete')
-})
-
-app.listen(3000)
+main()
